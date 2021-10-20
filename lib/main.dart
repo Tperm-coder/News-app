@@ -1,25 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:weather_application/router.dart';
 
 void main() {
-  runApp(MaterialApp(home: MyApp()));
+  runApp(WeatherApp());
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+class WeatherApp extends StatelessWidget {
+  WeatherApp({Key? key}) : super(key: key);
 
-  @override
-  _MyAppState createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
+  final AppRouter router = AppRouter();
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        child: Center(
-          child: Text("up and running"),
-        ),
-      ),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      onGenerateRoute: router.generateRoute,
     );
   }
 }
