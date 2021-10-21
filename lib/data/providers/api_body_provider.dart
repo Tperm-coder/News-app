@@ -1,4 +1,4 @@
-import 'package:weather_application/constants/api_configuration.dart';
+import 'package:weather_application/constants/constant_api_configuration.dart';
 
 class ApiBody {
   final List<String> searchKeywords;

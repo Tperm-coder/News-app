@@ -1,4 +1,4 @@
-import 'package:weather_application/constants/api_configuration.dart';
+import 'package:weather_application/constants/constant_api_configuration.dart';
 
 class Article {
   final String articleTitle;
@@ -23,13 +23,13 @@ class Article {
   static Map<String, String> errorInResponse = {
     "body": "something went wrong",
     "title": "something went wrong",
-    "image": altImage,
+    "image": altImgConnectionError,
     "url": ""
   };
   static Map<String, String> emptyResponse = {
     "body": "nothing was found",
     "title": "nothing was found",
-    "image": altImage,
+    "image": altImgConnectionError,
     "url": ""
   };
 }
