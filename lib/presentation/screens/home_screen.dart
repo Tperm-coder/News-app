@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:weather_application/constants/constant_api_configuration.dart';
 import 'package:weather_application/constants/constant_colors.dart';
@@ -31,6 +32,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     final newsBloc = BlocProvider.of<NewsBlock>(context);
     final Size screenDimensions = MediaQuery.of(context).size;
     final double screenWidth = screenDimensions.width;
