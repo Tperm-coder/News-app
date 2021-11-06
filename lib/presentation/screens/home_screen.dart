@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:weather_application/constants/constant_api_configuration.dart';
 import 'package:weather_application/constants/constant_colors.dart';
 import 'package:weather_application/constants/constant_news_search_fields.dart';
 import 'package:weather_application/constants/constant_routes.dart';
-import 'package:weather_application/data/providers/article_provider.dart';
+import 'package:weather_application/logic/app_blocks/newsBlock/new_states.dart';
+import 'package:weather_application/logic/app_blocks/newsBlock/news_block.dart';
+import 'package:weather_application/logic/app_blocks/newsBlock/news_events.dart';
 import 'package:weather_application/presentation/components/custom_widgets/custom_text.dart';
 import 'package:weather_application/presentation/components/custom_widgets/search_item.dart';
 import 'package:weather_application/presentation/components/custom_widgets/search_result_item.dart';
@@ -23,21 +26,12 @@ class _HomeScreenState extends State<HomeScreen> {
     strokeWidth: 2,
   );
 
-  int indexOfSelected = 0;
+  int indexOfSelected = -1;
   late double globalScreenWidth;
-  late ListView searchTopics;
-  late Widget? searchResults = loadingIndicator;
-  late List<dynamic> receivedArticles;
-
-  @override
-  void initState() {
-    super.initState();
-    searchTopics = _getSearchTopics();
-    _getSearchResults([constantSearchFields[indexOfSelected]]);
-  }
 
   @override
   Widget build(BuildContext context) {
+    final newsBloc = BlocProvider.of<NewsBlock>(context);
     final Size screenDimensions = MediaQuery.of(context).size;
     final double screenWidth = screenDimensions.width;
     final double screenHeight = screenDimensions.height;
@@ -58,18 +52,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: TextField(
                       autofocus: false,
                       onSubmitted: (value) {
-                        setState(() {
-                          searchResults = loadingIndicator;
-                          indexOfSelected = -1;
-                          _updateSearchTopics();
-                        });
-                        _getSearchResults(value.split(' '));
+                        newsBloc.add(FetchNews(articles: value.split(' ')));
                       },
                       cursorColor: const Color(mainDarkColor),
                       textAlign: TextAlign.start,
                       decoration: InputDecoration(
-                        suffixIcon: const Icon(Icons.search_rounded,
-                            color: Color(0xff888693)),
+                        suffixIcon: const Icon(
+                          Icons.search_rounded,
+                          color: Color(0xff888693),
+                        ),
                         fillColor: const Color(mainGreyColor),
                         filled: true,
                         hintText: "Search News",
@@ -101,10 +92,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                     width: 50,
                                     child: TextField(
                                       onSubmitted: (value) {
-                                        setState(() {
-                                          articleCount = int.parse(value);
-                                          Navigator.of(context).pop();
-                                        });
+                                        setState(
+                                          () {
+                                            articleCount = int.parse(value);
+                                            Navigator.of(context).pop();
+                                          },
+                                        );
                                       },
                                       keyboardType: TextInputType.number,
                                       autofocus: false,
@@ -159,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(50)),
+                borderRadius: const BorderRadius.all(Radius.circular(50)),
                 child: SizedBox(
                   height: screenHeight * 0.3,
                   width: screenWidth * 0.8,
@@ -168,9 +161,47 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               SizedBox(
                 height: 60,
-                child: searchTopics,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: constantSearchFields.length,
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    return GestureDetector(
+                      child: SearchItem(
+                        text: constantSearchFields[index],
+                        isSelected: ((indexOfSelected == index) ? true : false),
+                      ),
+                      onTap: () {
+                        //
+                        newsBloc.add(
+                          FetchNews(articles: [constantSearchFields[index]]),
+                        );
+                        //
+                        setState(() {
+                          indexOfSelected = index;
+                        });
+                      },
+                    );
+                  },
+                ),
               ),
-              Expanded(child: searchResults ?? Container()),
+              Expanded(
+                child: BlocBuilder<NewsBlock, NewsStates>(
+                  builder: (context, state) {
+                    //
+                    if (state is NewsIsLoading) {
+                      return loadingIndicator;
+                    }
+                    //
+                    else if (state is NewsIsLoaded) {
+                      return _getSearchResults(state.articles);
+                    }
+                    //
+                    return Container();
+                  },
+                ),
+              ),
             ],
           ),
         ),
@@ -178,61 +209,34 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  ListView _getSearchTopics() {
+  ListView _getSearchResults(List<dynamic> receivedArticles) {
+    //
     return ListView.builder(
       shrinkWrap: true,
-      itemCount: constantSearchFields.length,
-      scrollDirection: Axis.horizontal,
+      scrollDirection: Axis.vertical,
+      itemCount: articleCount,
       physics: const BouncingScrollPhysics(),
+      //
       itemBuilder: (context, index) {
         return GestureDetector(
-          child: SearchItem(
-            text: constantSearchFields[index],
-            isSelected: ((indexOfSelected == index) ? true : false),
-          ),
+          //
+          child: SearchResultItem(
+              title: receivedArticles[index].articleTitle,
+              imgUrl: receivedArticles[index].articleImgUrl,
+              parentWidth: globalScreenWidth * 0.85),
+          //
           onTap: () {
-            setState(() {
-              searchResults = loadingIndicator;
-              indexOfSelected = index;
-              _updateSearchTopics();
-            });
-            _getSearchResults([constantSearchFields[indexOfSelected]]);
+            //
+            Navigator.pushNamed(
+                //
+                context,
+                choosedArticleScreenRoute,
+                arguments: receivedArticles[index]
+                //
+                );
           },
         );
       },
     );
-  }
-
-  void _updateSearchTopics() {
-    setState(() {
-      searchTopics = _getSearchTopics();
-    });
-  }
-
-  void _getSearchResults(List<String> keyWords) async {
-    print("loading");
-    ArticleProvider art = ArticleProvider(searchKeyWords: keyWords);
-    print(keyWords);
-    receivedArticles = await art.getArticles();
-    setState(() {
-      searchResults = ListView.builder(
-          shrinkWrap: true,
-          scrollDirection: Axis.vertical,
-          itemCount: articleCount,
-          physics: const BouncingScrollPhysics(),
-          itemBuilder: (context, index) {
-            return GestureDetector(
-              child: SearchResultItem(
-                  title: receivedArticles[index].articleTitle,
-                  imgUrl: receivedArticles[index].articleImgUrl,
-                  parentWidth: globalScreenWidth * 0.85),
-              onTap: () {
-                Navigator.pushNamed(context, choosedArticleScreenRoute,
-                    arguments: receivedArticles[index]);
-              },
-            );
-          });
-    });
-    print("DONE");
   }
 }

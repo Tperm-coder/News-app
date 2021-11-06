@@ -1,4 +1,4 @@
-// the constant search fields that are found
+// the constant search fields that is found
 // in the main screen
 const List<String> constantSearchFields = [
   "Tech",

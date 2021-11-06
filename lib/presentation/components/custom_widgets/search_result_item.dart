@@ -3,7 +3,7 @@ import 'package:weather_application/constants/constant_api_configuration.dart';
 import 'package:weather_application/constants/constant_colors.dart';
 import 'package:weather_application/presentation/components/custom_widgets/custom_text.dart';
 
-class SearchResultItem extends StatefulWidget {
+class SearchResultItem extends StatelessWidget {
   final String title;
   final String imgUrl;
   final double parentWidth;
@@ -14,11 +14,6 @@ class SearchResultItem extends StatefulWidget {
       required this.title})
       : super(key: key);
 
-  @override
-  _SearchResultItemState createState() => _SearchResultItemState();
-}
-
-class _SearchResultItemState extends State<SearchResultItem> {
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -31,25 +26,19 @@ class _SearchResultItemState extends State<SearchResultItem> {
         child: Row(
           children: [
             SizedBox(
-                width: 100,
-                height: 100,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8.0),
-                  child: ((widget.title == "something went wrong")
-                      ? Image.asset(altImgConnectionError, fit: BoxFit.fill)
-                      : ((widget.title == "nothing was found")
-                          ? Image.asset(altImgNothingFound, fit: BoxFit.fill)
-                          : Image.network(
-                              widget.imgUrl,
-                              fit: BoxFit.fill,
-                            ))),
-                )),
+              width: 100,
+              height: 100,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8.0),
+                child: _getArticleImg(),
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: SizedBox(
-                width: widget.parentWidth - (100 + 8 * 2 + 10 * 2),
+                width: parentWidth - (100 + 8 * 2 + 10 * 2),
                 child: CustomText(
-                    text: widget.title,
+                    text: title,
                     fontSize: 13,
                     fontColor: const Color(mainDarkColor)),
               ),
@@ -58,5 +47,32 @@ class _SearchResultItemState extends State<SearchResultItem> {
         ),
       ),
     );
+  }
+
+  Widget _getArticleImg() {
+    bool articleReceived;
+    //
+    (title == "something went wrong")
+        ? articleReceived = false
+        : articleReceived = true;
+    //
+    if (!articleReceived) {
+      return Image.asset(altImgConnectionError, fit: BoxFit.fill);
+    }
+
+    bool articleFound;
+    (title == "nothing was found") ? articleFound = false : articleFound = true;
+    //
+    if (articleFound) {
+      return Image.network(
+        imgUrl,
+        fit: BoxFit.fill,
+      );
+      //
+    }
+    //
+    else {
+      return Image.asset(altImgNothingFound, fit: BoxFit.fill);
+    }
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'dart:ui';
 import 'package:weather_application/constants/constant_colors.dart';
 import 'package:weather_application/presentation/components/custom_widgets/custom_text.dart';
 
@@ -15,8 +14,8 @@ class SearchItem extends StatefulWidget {
 }
 
 class _SearchItemState extends State<SearchItem> {
-  Color btnClr = Color(mainDarkColor);
-  Color fontClr = Color(mainGreyColor);
+  Color btnClr = const Color(mainDarkColor);
+  Color fontClr = const Color(mainGreyColor);
   @override
   Widget build(BuildContext context) {
     return Padding(

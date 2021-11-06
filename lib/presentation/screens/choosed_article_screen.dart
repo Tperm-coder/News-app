@@ -76,7 +76,7 @@ class _ChoosedArticleScreenState extends State<ChoosedArticleScreen> {
                         width: screenWidth * 0.85,
                         child: Text(
                           choosedArticle.articleSource,
-                          style: TextStyle(color: Colors.white),
+                          style: const TextStyle(color: Colors.white),
                         ),
                       ),
                     ),
